@@ -62,9 +62,9 @@ def send_message(bot: telegram.Bot, message):
     logger.debug('Попытка отправить сообщение в Telegram.')
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
-        logger.debug('Удачная отправка сообщения в Telegram.')
+        logger.debug("Отправили сообщение через бота")
     except Exception as error:
-        logger.error(f'Не удалось отправить сообщение в Telegram: {error}')
+        logger.error(f"Не удалось отправить сообщение через бота{error}")
 
 
 def get_api_answer(timestamp):
