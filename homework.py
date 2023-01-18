@@ -67,7 +67,6 @@ def send_message(bot: telegram.Bot, message):
         logger.error(f'Не удалось отправить сообщение в Telegram: {error}')
 
 
-
 def get_api_answer(timestamp):
     """Делает запрос к API."""
     logger.debug("Отправка запроса к API.")
