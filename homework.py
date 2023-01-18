@@ -77,9 +77,11 @@ def get_api_answer(timestamp):
         )
         logger.debug("Получили ответ от API Практикума")
     except requests.RequestException as error:
-        raise ApiRequestError("Ошибка при запросе")
+        raise ApiRequestError(f'API недоступен. {error}')
     if response.status_code != requests.codes.ok:
-        raise WrongHTTPStatus("Мы получили плохой ответ")
+        raise WrongHTTPStatus(
+            f'API недоступен, код ответа сервера {response.status_code}'
+        )
     return response.json()
 
 
