@@ -5,6 +5,13 @@ class NoneEnvVariableError(Exception):
     pass
 
 
+class ApiRequestError(Exception):
+    '''
+    Ошибка при обращении к API.
+    '''
+    pass
+
+
 class WrongHTTPStatus(Exception):
     '''
     Статус код не 2хх.

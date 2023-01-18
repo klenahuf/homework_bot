@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 from exceptions import (
     HomeWorkApiError,
+    ApiRequestError,
     InvalidTelegramToken,
     NoneEnvVariableError,
     WrongHTTPStatus,
@@ -70,11 +71,13 @@ def send_message(bot: telegram.Bot, message):
 def get_api_answer(timestamp):
     """Делает запрос к API."""
     logger.debug("Отправка запроса к API.")
-    response = requests.get(
-        url=ENDPOINT,
-        headers=HEADERS,
-        params={"from_date": timestamp}
-    )
+    try:
+        response = requests.get(
+            url=ENDPOINT, headers=HEADERS, params={"from_date": timestamp}
+        )
+        logger.debug("Получили ответ от API Практикума")
+    except requests.RequestException as error:
+        raise ApiRequestError("Ошибка при запросе")
     if response.status_code != requests.codes.ok:
         raise WrongHTTPStatus("Мы получили плохой ответ")
     return response.json()
