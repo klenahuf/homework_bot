@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 
 from exceptions import (
-    ApiRequestError,
     HomeWorkApiError,
     InvalidTelegramToken,
     NoneEnvVariableError,
@@ -73,7 +72,7 @@ def get_api_answer(timestamp):
     logger.debug("Отправка запроса к API.")
     response = requests.get(
             url=ENDPOINT, headers=HEADERS, params={"from_date": timestamp}
-        )
+    )
     if response.status_code != requests.codes.ok:
         raise WrongHTTPStatus("Мы получили плохой ответ")
     return response.json()
@@ -131,10 +130,10 @@ def main():
             if homework_list:
                 send_message(bot, parse_status(homework_list[0]))
             timestamp = response.get('current_date', timestamp)
-        except Exception as error: 
-            logger.error(f"Сбой в работе программы: {error}") 
-            message = f"Сбой в работе программы: {error}" 
-            send_message(bot, message) 
+        except Exception as error:
+            logger.error(f"Сбой в работе программы: {error}")
+            message = f"Сбой в работе программы: {error}"
+            send_message(bot, message)
 
         finally:
             logger.debug("Засыпаем на 10 минут")
