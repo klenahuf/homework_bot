@@ -8,9 +8,6 @@ import telegram
 from dotenv import load_dotenv
 
 
-load_dotenv()
-
-
 from exceptions import (
     ApiRequestError,
     HomeWorkApiError,
@@ -18,6 +15,9 @@ from exceptions import (
     NoneEnvVariableError,
     WrongHTTPStatus,
 )
+
+
+load_dotenv()
 
 
 PRACTICUM_TOKEN = os.getenv("PRACTICUM_TOKEN")
@@ -77,7 +77,6 @@ def get_api_answer(timestamp):
         logger.error("Мы получили плохой ответ")
         raise WrongHTTPStatus("Мы получили плохой ответ")
     return response.json()
-
 
 
 def check_response(response):
