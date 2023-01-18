@@ -70,13 +70,10 @@ def send_message(bot: telegram.Bot, message):
 
 def get_api_answer(timestamp):
     """Делает запрос к API."""
-    logger.info("Отправка запроса к API.")
-    try:
-        response = requests.get(
+    logger.debug("Отправка запроса к API.")
+    response = requests.get(
             url=ENDPOINT, headers=HEADERS, params={"from_date": timestamp}
         )
-    except requests.RequestException as error:
-        raise ApiRequestError("Ошибка при запросе {error}")
     if response.status_code != requests.codes.ok:
         raise WrongHTTPStatus("Мы получили плохой ответ")
     return response.json()
@@ -134,14 +131,10 @@ def main():
             if homework_list:
                 send_message(bot, parse_status(homework_list[0]))
             timestamp = response.get('current_date', timestamp)
-        except Exception as error:
-            errormessage = f'Сбой в работе программы: {error}'
-            logging.critical(errormessage)
-            if current_error != errormessage:
-                current_error = errormessage
-                send_message(bot, errormessage)
-        else:
-            current_error = None
+        except Exception as error: 
+            logger.error(f"Сбой в работе программы: {error}") 
+            message = f"Сбой в работе программы: {error}" 
+            send_message(bot, message) 
 
         finally:
             logger.debug("Засыпаем на 10 минут")
