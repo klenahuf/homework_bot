@@ -38,18 +38,11 @@ HOMEWORK_VERDICTS = {
 
 logging.basicConfig(
     level=logging.DEBUG,
-    filename='my_logs.log',
-    format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
+    filename='main.log',
+    format='%(funcName)s, %(lineno)s, %(levelname)s, %(message)s',
 )
-formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-logger.addHandler(handler)
-handler.setFormatter(formatter)
+handlers = [logging.FileHandler('log.txt'),
+            logging.StreamHandler(sys.stdout)]
 
 
 def check_tokens():
