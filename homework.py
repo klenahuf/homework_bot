@@ -71,9 +71,9 @@ def get_api_answer(timestamp):
     """Делает запрос к API."""
     logger.debug("Отправка запроса к API.")
     response = requests.get(
-            url=ENDPOINT, 
-            headers=HEADERS, 
-            params={"from_date": timestamp}
+        url=ENDPOINT,
+        headers=HEADERS,
+        params={"from_date": timestamp}
     )
     if response.status_code != requests.codes.ok:
         raise WrongHTTPStatus("Мы получили плохой ответ")
