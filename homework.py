@@ -52,23 +52,23 @@ def check_tokens():
 
 def send_message(bot: telegram.Bot, message):
     """Отправляет сообщения в Telegram."""
-    logger.info('Попытка отправить сообщение в Telegram.')
+    logging.info('Попытка отправить сообщение в Telegram.')
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
     except Exception as error:
-        logger.error(f"Не удалось отправить сообщение через бота: {error}")
+        logging.error(f"Не удалось отправить сообщение через бота: {error}")
     else:
-        logger.debug("Отправили сообщение через бота")
+        logging.debug("Отправили сообщение через бота")
 
 
 def get_api_answer(timestamp):
     """Делает запрос к API."""
-    logger.debug("Отправка запроса к API.")
+    logging.debug("Отправка запроса к API.")
     try:
         response = requests.get(
             url=ENDPOINT, headers=HEADERS, params={"from_date": timestamp}
         )
-        logger.debug("Получили ответ от API Практикума")
+        logging.debug("Получили ответ от API Практикума")
     except requests.RequestException as error:
         raise ApiRequestError(f'API недоступен. {error}')
     if response.status_code != requests.codes.ok:
@@ -120,7 +120,7 @@ def main():
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
     except telegram.error.InvalidToken:
         raise InvalidTelegramToken("Некорректный token для бота")
-    logger.debug("Запуск бота")
+    logging.debug("Запуск бота")
     timestamp = int(time.time())
     while True:
         try:
@@ -131,12 +131,12 @@ def main():
                 send_message(bot, parse_status(homework_list[0]))
             timestamp = response.get('current_date', timestamp)
         except Exception as error:
-            logger.error(f"Сбой в работе программы: {error}")
+            logging.error(f"Сбой в работе программы: {error}")
             message = f"Сбой в работе программы: {error}"
             send_message(bot, message)
 
         finally:
-            logger.debug("Засыпаем на 10 минут")
+            logging.debug("Засыпаем на 10 минут")
             time.sleep(RETRY_PERIOD)
 
 
