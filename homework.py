@@ -59,12 +59,13 @@ def check_tokens():
 
 def send_message(bot: telegram.Bot, message):
     """Отправляет сообщения в Telegram."""
-    logger.debug('Попытка отправить сообщение в Telegram.')
+    logger.info('Попытка отправить сообщение в Telegram.')
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
-        logger.debug("Отправили сообщение через бота")
     except Exception as error:
-        logger.error(f"Не удалось отправить сообщение через бота{error}")
+        logger.error(f"Не удалось отправить сообщение через бота: {error}")
+    else:
+        logger.debug("Отправили сообщение через бота")
 
 
 def get_api_answer(timestamp):
