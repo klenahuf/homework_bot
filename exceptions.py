@@ -1,33 +1,33 @@
-class NoneEnvVariableException(Exception):
+class NoneEnvVariableError(Exception):
     '''
     Ошибка незаполненной переменной окружения.
     '''
     pass
 
 
-class ApiRequestException(Exception):
+class ApiRequestError(Exception):
     '''
     Ошибка при обращении к API.
     '''
     pass
 
 
-class NotOkStatusCodeException(Exception):
+class WrongHTTPStatus(Exception):
     '''
-    Ошибка статус код не 2хх.
+    Статус код не 2хх.
     '''
     pass
 
 
-class HomeWorkApiException(Exception):
+class HomeWorkApiError(Exception):
     '''
     Ошибка при неправильном наполнении словаря homework в ответе API.
     '''
     pass
 
 
-class InvalidTelegramTokenException(Exception):
+class InvalidTelegramToken(Exception):
     '''
-    Ошибка при некорректном токене для бота Telegram
+    Некорректный токен для бота Telegram
     '''
     pass

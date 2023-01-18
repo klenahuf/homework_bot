@@ -7,15 +7,17 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-from exceptions import (
-    ApiRequestException,
-    HomeWorkApiException,
-    InvalidTelegramTokenException,
-    NoneEnvVariableException,
-    NotOkStatusCodeException,
-)
 
 load_dotenv()
+
+
+from exceptions import (
+    ApiRequestError,
+    HomeWorkApiError,
+    InvalidTelegramToken,
+    NoneEnvVariableError,
+    WrongHTTPStatus,
+)
 
 
 PRACTICUM_TOKEN = os.getenv("PRACTICUM_TOKEN")
@@ -33,67 +35,49 @@ HOMEWORK_VERDICTS = {
     "rejected": "Работа проверена: у ревьюера есть замечания.",
 }
 
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-handler.setFormatter(
-    logging.Formatter(
-        "%(asctime)s  [%(levelname)s] %(funcName)s(%(lineno)d)  %(message)s"
-    )
-)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(stream=sys.stdout)
 logger.addHandler(handler)
+formatter = logging.Formatter(
+    '%(asctime)s,'
+    + '%(levelname)s, %(message)s, %(name)s, %(funcName)s, %(lineno)s'
+)
+handler.setFormatter(formatter)
 
 
 def check_tokens():
-    """
-    Функция проверки того, что определены все переменные окружения.
-    Выбрысывает ошибка и логируется уровнем critical в противном случае.
-    """
-    env_variables = {
-        PRACTICUM_TOKEN: "PRACTICUM_TOKEN",
-        TELEGRAM_TOKEN: "TELEGRAM_TOKEN",
-        TELEGRAM_CHAT_ID: "TELEGRAM_CHAT_ID",
-    }
-    for env_variable in env_variables:
-        if not env_variable:
-            logger.critical(
-                f"Нет переменной окружения {env_variables.get(env_variable)}"
-            )
-            return False
-    return True
+    """Проверка доступности переменных окружения."""
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def send_message(bot: telegram.Bot, message):
-    """
-    Отправляет сообщение message через telegram Bot - bot.
-    При неудачное отправке логируем ошибку уровнем error
-    """
+    """Отправляет сообщения в Telegram."""
+    logger.info('Попытка отправить сообщение в Telegram.')
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
-        logger.debug("Отправили сообщение через бота")
     except Exception as error:
-        logger.error(f"Не удалось отправить сообщение через бота{error}")
+        logger.error(f'Не удалось отправить сообщение в Telegram: {error}')
+    else:
+        logger.info('Удачная отправка сообщения в Telegram.')
 
 
 def get_api_answer(timestamp):
-    """
-    Делаем запрос к API Практикума.
-    При неудачном запросе выбрасываем исключение
-    Проверяем что статус ответа ОК.
-    Возвращаем ответ API, приведенный к Python словарю
-    """
+    """Делает запрос к API."""
+    logger.info('Отправка запроса к API.')
     try:
         response = requests.get(
             url=ENDPOINT, headers=HEADERS, params={"from_date": timestamp}
         )
-        logger.debug("Получили ответ от API Практикума")
     except requests.RequestException as error:
         logger.error(f"Получили ошибку при запросе {error}")
-        raise ApiRequestException("Ошибка при запросе")
+        raise ApiRequestError("Ошибка при запросе")
     if response.status_code != requests.codes.ok:
         logger.error("Мы получили плохой ответ")
-        raise NotOkStatusCodeException("Мы получили плохой ответ")
+        raise WrongHTTPStatus("Мы получили плохой ответ")
     return response.json()
+
 
 
 def check_response(response):
@@ -101,6 +85,7 @@ def check_response(response):
     Проверяет то, что ответ API был приведен к типу данных dict.
     а так же то, что в ответе имеется ключ homeworks типа данных list
     """
+    logger.info('Проверка ответа API на корректность')
     if not isinstance(response, dict):
         raise TypeError("Response должен быть типом данных dict")
     if "homeworks" not in response or "current_date" not in response:
@@ -115,10 +100,11 @@ def parse_status(homework):
     Получаем статус самой свежей проверки ДЗ.
     Проверяем что в ответе API есть имя и статус ДЗ.
     """
+    logger.info('Статус проверки работы получен')
     homework_name = homework.get("homework_name", None)
     homework_status = homework.get("status", None)
     if homework_name is None or homework_status not in HOMEWORK_VERDICTS:
-        raise HomeWorkApiException(
+        raise HomeWorkApiError(
             "Неправильное наполнение словаря с результатами ДЗ"
         )
     verdict = HOMEWORK_VERDICTS.get(homework_status)
@@ -128,11 +114,11 @@ def parse_status(homework):
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
-        raise NoneEnvVariableException("Нет переменной окружения")
+        raise NoneEnvVariableError("Нет переменной окружения")
     try:
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
     except telegram.error.InvalidToken:
-        raise InvalidTelegramTokenException("Некорректный token для бота")
+        raise InvalidTelegramToken("Некорректный token для бота")
     logger.debug("Запуск бота")
     timestamp = int(time.time())
     while True:
@@ -144,14 +130,9 @@ def main():
                 send_message(bot, parse_status(homework_list[0]))
             else:
                 logger.debug("Новых обновлений по ДЗ нет.")
-            timestamp = response.get("current_date")
-
-        except TypeError as error:
-            logger.critical(f"Некорректный response. Ошибка - {error}")
-            sys.exit(f"Некорретный respose. Ошибка - {error}")
-
+            timestamp = response.get('current_date', timestamp)
         except Exception as error:
-            logger.error(f"Сбой в работе программы: {error}")
+            logger.error(error)
             message = f"Сбой в работе программы: {error}"
             send_message(bot, message)
 
